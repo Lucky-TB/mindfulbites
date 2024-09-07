@@ -55,11 +55,11 @@ export default function HomeTab() {
           </View>
         </View>
 
-        <CustomButton
+        {/*<CustomButton
           title="Submit Mood"
           handlePress={handleOpenModal} // Trigger modal visibility and navigation
           containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 10, marginBottom: 10 }}
-        />
+        />*/}
         <CustomButton
           title="Get Food Suggestions"
           handlePress={handleOpenModal} // Trigger modal visibility and navigation

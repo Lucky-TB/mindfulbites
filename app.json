@@ -11,10 +11,10 @@
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
-    }, 
+    },
     "ios": {
       "supportsTablet": true,
-      "package": "com.luckytb.mindfulbites"
+      "package": "com.luckytb.mindfulbites"  
     },
     "android": {
       "adaptiveIcon": {

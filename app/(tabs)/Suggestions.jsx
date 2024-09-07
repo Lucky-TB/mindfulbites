@@ -148,7 +148,6 @@ const GeminiChat = () => {
       const responseText = result?.response?.text ? result.response.text() : 'No response available.';
   
       // Save AI response to storage
-      saveRecipesToStorage([...recipes, { text: responseText, user: false }]);
   
       // Update the messages with the chatbot response
       setMessages((prevMessages) => [
