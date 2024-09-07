@@ -63,7 +63,7 @@ export default function HomeTab() {
         <CustomButton
           title="Get Food Suggestions"
           handlePress={handleOpenModal} // Trigger modal visibility and navigation
-          containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 15 }}
+          containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 10 }}
         />
       </View>
     </SafeAreaView>

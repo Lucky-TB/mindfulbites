@@ -18,9 +18,11 @@ import { StatusBar } from 'expo-status-bar';
 import { ModalContext } from '../../components/ModalContext'; // Import ModalContext
 import { BlurView } from 'expo-blur'; // Import BlurView
 import { GEMINI_API_KEY } from '@env';
+import useAsyncStorageRecipes from '../../components/asyncStorageRecipes';
+import Slider from '@react-native-community/slider';
 
-const ModalComponent = () => {
-  const { modalVisible, setModalVisible } = useContext(ModalContext); // Access modal visibility state
+const ModalComponent = ({ onSubmit }) => {
+  const { modalVisible, setModalVisible } = useContext(ModalContext);
   const [height, setHeight] = useState(0);
   const [text1, setText1] = useState('');
   const handleTextChange1 = (input) => {
@@ -33,16 +35,23 @@ const ModalComponent = () => {
 
   const closeModal = () => {
     setModalVisible(false);
-    setText1(''); // Clear text1
-    setText2(''); // Clear text2
+    setText1('');
+    setText2('');
+  };
+
+  const handleSubmit = () => {
+    if (text1.trim()) {
+      onSubmit(text1, text2); // Pass both text1 and text2 to the callback
+    }
+    closeModal();
   };
 
   return (
     <Modal
       animationType="slide"
       transparent={true}
-      visible={modalVisible} // Use context state for visibility
-      onRequestClose={closeModal} // Close modal on back press
+      visible={modalVisible}
+      onRequestClose={closeModal}
     >
       <BlurView intensity={10} className="flex-1 justify-center items-center bg-[rgba(0,0,0,0.5)]">
         <View className="w-[80%] min-h-[70%] max-h-[70%] bg-[#b6d9d7] rounded-2xl p-5 border-2 border-[#478385]">
@@ -77,7 +86,7 @@ const ModalComponent = () => {
             />
           </ScrollView>
           <TouchableOpacity
-            onPress={closeModal} // Close modal on button press
+            onPress={handleSubmit}
             className="bg-[#478385] p-4 rounded-lg mt-5 border-2"
           >
             <Text className="text-white font-bold text-center">Submit</Text>
@@ -95,18 +104,24 @@ const GeminiChat = () => {
   const [showStopIcon, setShowStopIcon] = useState(false);
   const flatListRef = useRef(null);
   const { setModalVisible } = useContext(ModalContext);
-
+  const { recipes, saveRecipesToStorage } = useAsyncStorageRecipes
   const API_KEY = GEMINI_API_KEY;
 
   useEffect(() => {
     const startChat = async () => {
       const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(API_KEY);
       const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-      const prompt = "hello";
+      const prompt = 'hello';
       const result = await model.generateContent(prompt);
-
       const text = result?.response?.text ? result.response.text() : 'No response available.';
       setMessages([{ text, user: false }]);
+      useEffect(() => { //This line gives warning be careful
+        const loadStoredRecipes = async () => {
+          await loadRecipesFromStorage(); 
+        };
+      
+        loadStoredRecipes();
+      }, []);
     };
     startChat();
   }, []);
@@ -117,19 +132,39 @@ const GeminiChat = () => {
 
   const sendMessage = async () => {
     setLoading(true);
-    const userMessage = { text: userInput, user: true };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-
+  
+    // Display a loading message
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { text: 'ChatBot Loading...', user: false }
+    ]);
+  
     const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-    const prompt = userMessage.text;
-
-    const result = await model.generateContent(prompt);
-    const text = result?.response?.text ? result.response.text() : 'No response available.';
-    setMessages((prevMessages) => [...prevMessages, { text, user: false }]);
-
-    setLoading(false);
-    setUserInput('');
+    const prompt = userInput;
+  
+    try {
+      const result = await model.generateContent(prompt);
+      const responseText = result?.response?.text ? result.response.text() : 'No response available.';
+  
+      // Save AI response to storage
+      saveRecipesToStorage([...recipes, { text: responseText, user: false }]);
+  
+      // Update the messages with the chatbot response
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: responseText, user: false }
+      ]);
+    } catch (error) {
+      console.error('Error generating content:', error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: 'Failed to generate response.', user: false }
+      ]);
+    } finally {
+      setLoading(false);
+      setUserInput(''); // Clear user input after sending
+    }
   };
 
   const ClearMessage = () => {
@@ -137,13 +172,48 @@ const GeminiChat = () => {
     setIsSpeaking(false);
   };
 
+  const handleModalSubmit = async (text1, text2) => {
+    setLoading(true);
+  
+    // Display a loading message
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { text: 'ChatBot Loading...', user: false }
+    ]);
+  
+    // Construct the prompt using template literals
+    const prompt = `This is what I am feeling: ${text1}. These are the ingredients I have: ${text2}. Please make me a recipe. Can you try to keep the recipe short and also try to cheer up the user by giving them help on their specific feelings`;
+  
+    try {
+      const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(API_KEY);
+      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  
+      const result = await model.generateContent(prompt);
+      const responseText = result?.response?.text ? result.response.text() : 'No response available.';
+  
+      // Update the messages with the chatbot response
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: responseText, user: false }
+      ]);
+    } catch (error) {
+      console.error('Error generating content:', error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: 'Failed to generate response.', user: false }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderMessage = ({ item }) => (
     <View
       className={`p-3 my-1 rounded-2xl shadow-sm mt-4 mb-10 ${
-        item.user ? 'bg-[#b6d9d7] self-end' : 'bg-[#b6d9d7] self-start'
+        item.user || item.text === 'ChatBot Loading...' ? 'bg-[#b6d9d7] self-end' : 'bg-[#b6d9d7] self-start'
       } max-w-[80%]`}
     >
-      <Text className={`${item.user ? 'text-[#619fa0]' : 'text-gray-900'} text-lg font-semibold`}>
+      <Text className={`${item.user || item.text === 'ChatBot Loading...' ? 'text-[#619fa0]' : 'text-gray-900'} text-lg font-semibold`}>
         {item.text}
       </Text>
     </View>
@@ -157,7 +227,6 @@ const GeminiChat = () => {
         translucent={false}
         hidden={false}
       />
-
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -167,6 +236,7 @@ const GeminiChat = () => {
         contentContainerStyle={{ paddingBottom: 10 }}
         showsVerticalScrollIndicator={false}
       />
+
       <View className="flex-row items-center bg-[#88BDBC] p-3 rounded-3xl shadow-md">
         <TextInput
           placeholder="Type a message"
@@ -187,7 +257,7 @@ const GeminiChat = () => {
         {loading && <ActivityIndicator size="large" color="#4B5563" className="ml-2" />}
       </View>
 
-      <ModalComponent />
+      <ModalComponent onSubmit={handleModalSubmit} />
       
     </View>
   );
