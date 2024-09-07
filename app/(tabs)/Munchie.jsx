@@ -18,7 +18,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ModalContext } from '../../components/ModalContext'; // Import ModalContext
 import { BlurView } from 'expo-blur'; // Import BlurView
 import { GEMINI_API_KEY } from '@env';
-import useAsyncStorageRecipes from '../../components/asyncStorageRecipes';
+{/*import useAsyncStorageRecipes from '../../components/asyncStorageRecipes';*/}
 import Slider from '@react-native-community/slider';
 
 const ModalComponent = ({ onSubmit }) => {

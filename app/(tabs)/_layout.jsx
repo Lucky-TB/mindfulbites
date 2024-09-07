@@ -53,14 +53,14 @@ const TabsLayout = () => {
                 }}                
             />
             <Tabs.Screen
-                name="Suggestions"
-                options={{ title: 'Suggestions',
+                name="Munchie"
+                options={{ title: 'Munchie',
                     headerShown: false,
                     tabBarIcon: ({ color, focused }) => (
                       <TabIcon
                         icon={icons.bookmark}
                         color={color}
-                        name="Suggestions"
+                        name="Munchie"
                         focused={focused}
                       />
                     )
@@ -81,14 +81,28 @@ const TabsLayout = () => {
                 }}
             />
             <Tabs.Screen
-                name="settings"
-                options={{ title: 'Settings',
+                name="profile"
+                options={{ title: 'Profile',
                     headerShown: false,
                     tabBarIcon: ({ color, focused }) => (
                       <TabIcon
                         icon={icons.profile}
                         color={color}
-                        name="Settings"
+                        name="Profile"
+                        focused={focused}
+                      />
+                    )
+                }}
+            />
+            <Tabs.Screen
+                name="test"
+                options={{ title: 'test',
+                    headerShown: false,
+                    tabBarIcon: ({ color, focused }) => (
+                      <TabIcon
+                        icon={icons.profile}
+                        color={color}
+                        name="test"
                         focused={focused}
                       />
                     )

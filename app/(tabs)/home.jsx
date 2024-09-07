@@ -3,23 +3,34 @@ import { View, Text, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
-import CustomButton from '../../components/CustomButton'; // Importing the CustomButton
-import { ModalContext } from '../../components/ModalContext'; // Import ModalContext
+import CustomButton from '../../components/CustomButton';
+import { ModalContext } from '../../components/ModalContext';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function HomeTab() {
   const navigation = useNavigation();
-  const { setModalVisible } = useContext(ModalContext); // Access setModalVisible from context
-  const [stressLevel, setStressLevel] = useState(0); // 0: Low, 1: Medium, 2: High
+  const { setModalVisible } = useContext(ModalContext);
+  const [stressLevel, setStressLevel] = useState(0); // Initialize with 0
 
   const handleStressLevelChange = (value) => {
-    setStressLevel(value);
+    setStressLevel(value); // Set stress level based on slider
+  };
+
+  const handleSubmitMood = async () => {
+    try {
+      // Save the stress level to AsyncStorage
+      await AsyncStorage.setItem('@current_mood', String(stressLevel)); 
+      console.log('Mood saved:', stressLevel + 1);
+    } catch (error) {
+      console.error('Error saving mood:', error);
+    }
   };
 
   const handleOpenModal = () => {
-    setModalVisible(true); // Open modal by setting visibility to true
-    navigation.navigate('Suggestions'); // Navigate to Suggestions screen
+    setModalVisible(true);
+    navigation.navigate('Munchie');
   };
 
   return (
@@ -47,22 +58,25 @@ export default function HomeTab() {
           />
 
           <View className="flex-row justify-between px-2 mt-2">
-            <Text className={`text-[#3B3B3B] ${stressLevel === 0 ? 'text-[#88BDBC]' : ''}`}>1</Text>
-            <Text className={`text-[#3B3B3B] ${stressLevel === 1 ? 'text-[#88BDBC]' : ''}`}>2</Text>
-            <Text className={`text-[#3B3B3B] ${stressLevel === 2 ? 'text-[#88BDBC]' : ''}`}>3</Text>
-            <Text className={`text-[#3B3B3B] ${stressLevel === 3 ? 'text-[#88BDBC]' : ''}`}>4</Text>
-            <Text className={`text-[#3B3B3B] ${stressLevel === 4 ? 'text-[#88BDBC]' : ''}`}>5</Text>
+            {[1, 2, 3, 4, 5].map((val) => (
+              <Text
+                key={val}
+                className={`text-[#3B3B3B] ${stressLevel + 1 === val ? 'text-[#88BDBC]' : ''}`}
+              >
+                {val}
+              </Text>
+            ))}
           </View>
         </View>
 
-        {/*<CustomButton
-          title="Submit Mood"
-          handlePress={handleOpenModal} // Trigger modal visibility and navigation
-          containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 10, marginBottom: 10 }}
-        />*/}
         <CustomButton
-          title="Get Food Suggestions"
-          handlePress={handleOpenModal} // Trigger modal visibility and navigation
+          title="Submit Mood"
+          handlePress={handleSubmitMood}
+          containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 10, marginBottom: 10 }}
+        />
+        <CustomButton
+          title="Ask Munchie"
+          handlePress={handleOpenModal}
           containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 10 }}
         />
       </View>

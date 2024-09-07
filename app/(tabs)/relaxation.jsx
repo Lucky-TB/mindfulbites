@@ -67,7 +67,7 @@ export default function Relaxation() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E9F0E8] justify-center items-center">
+    <SafeAreaView className="flex-1 bg-[#dbeceb] justify-center items-center">
       <Text className="text-xl font-bold text-[#3B3B3B] mb-6 text-center">
         Take a Mindful Break
       </Text>

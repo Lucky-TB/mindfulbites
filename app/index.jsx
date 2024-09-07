@@ -1,49 +1,60 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Image, ScrollView, Text, View, Dimensions } from 'react-native';
-import { Redirect, router } from 'expo-router';
+import { Image, ScrollView, Text, View, Dimensions, Animated } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { images } from '../constants';
-import CustomButton from '../components/CustomButton';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-export default function App() {
+export default function Index() {
+  const router = useRouter();
+  const opacity = new Animated.Value(1); // Initial opacity
+
+  useEffect(() => {
+    // Fade out effect
+    Animated.timing(opacity, {
+      toValue: 0,
+      duration: 2000,
+      useNativeDriver: true,
+    }).start();
+
+    // Automatically navigate to home after 2 seconds
+    const timer = setTimeout(() => {
+      router.replace('/home', undefined, { shallow: true }); // Use shallow routing to avoid animations
+    }, 2000);
+
+    // Cleanup timer on component unmount
+    return () => clearTimeout(timer);
+  }, [router, opacity]);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#dbeceb' }}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 16 }} scrollEnabled={ false }>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 16 }} scrollEnabled={false}>
         <View style={{ width: '100%', alignItems: 'center', minHeight: screenHeight * 0.95 }}>
-          {/*<Image 
+          {/* Optional logo image */}
+          {/* <Image 
             source={images.logo}
             style={{ width: screenWidth * 0.85, height: screenHeight * 0.1, marginTop: 30 }}
             resizeMode="contain"
-  />*/}
+          /> */}
 
-          
-
-          <Image 
+          <Animated.Image 
             source={images.cards}
-            style={{ width: screenWidth * 0.90, height: screenHeight * 0.37, marginTop: 70, marginRight: 10 }} // Increased size
+            style={{ width: screenWidth * 0.90, height: screenHeight * 0.37, marginTop: 115, marginRight: 10, opacity }}
             resizeMode="contain"
           />
 
-          <View style={{ marginTop: 20 }}>
+          <Animated.View style={{ opacity }}>
             <Text style={{ fontSize: screenHeight * 0.035, color: '#112122', fontWeight: 'bold', textAlign: 'center', lineHeight: 30 }}>
               Savor the Moment with {''}
               <Text style={{ color: '#88bdbc' }}>Mindful Bites</Text>
             </Text>
-          </View>
+          </Animated.View>
 
-          <Text style={{ fontSize: screenHeight * 0.019, color: '#112122', textAlign: 'center', marginTop: 25, lineHeight: screenHeight * 0.025 }}>
+          <Animated.Text style={{ fontSize: screenHeight * 0.019, color: '#112122', textAlign: 'center', marginTop: 25, lineHeight: screenHeight * 0.025, opacity }}>
             Discover Calm and Nourishment: Let Us Guide Your Journey to Mindful Eating
-          </Text>
-
-        
-          <CustomButton 
-            title="Begin Your Mindful Journey"
-            handlePress={() => router.push('/home')}
-            containerStyles={{ width: screenWidth * 0.70, height: 40, marginTop: 42 }} // Increased marginTop for spacing
-          />
+          </Animated.Text>
         </View>
       </ScrollView>
       
