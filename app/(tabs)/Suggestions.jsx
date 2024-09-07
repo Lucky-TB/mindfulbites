@@ -11,13 +11,12 @@ import {
   Modal,
   StatusBar as RNStatusBar,
 } from 'react-native';
-import * as Speech from 'expo-speech';
+{/*import * as Speech from 'expo-speech';*/}
 import { FontAwesome, Entypo } from '@expo/vector-icons';
 import FlashMessage, { showMessage } from 'react-native-flash-message';
 import { StatusBar } from 'expo-status-bar';
 import { ModalContext } from '../../components/ModalContext'; // Import ModalContext
 import { BlurView } from 'expo-blur'; // Import BlurView
-import Constants from 'expo-constants'
 import { GEMINI_API_KEY } from '@env';
 
 const ModalComponent = () => {
@@ -32,12 +31,18 @@ const ModalComponent = () => {
     setText2(input);
   };
 
+  const closeModal = () => {
+    setModalVisible(false);
+    setText1(''); // Clear text1
+    setText2(''); // Clear text2
+  };
+
   return (
     <Modal
       animationType="slide"
       transparent={true}
       visible={modalVisible} // Use context state for visibility
-      onRequestClose={() => setModalVisible(false)} // Close modal on back press
+      onRequestClose={closeModal} // Close modal on back press
     >
       <BlurView intensity={10} className="flex-1 justify-center items-center bg-[rgba(0,0,0,0.5)]">
         <View className="w-[80%] min-h-[70%] max-h-[70%] bg-[#b6d9d7] rounded-2xl p-5 border-2 border-[#478385]">
@@ -45,7 +50,7 @@ const ModalComponent = () => {
             contentContainerStyle={{ flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
           >
-            <Text className="text-3xl font-pbold mb-5 mt-3 text-center">Info</Text>
+            <Text className="text-3xl font-bold mb-5 mt-3 text-center">Info</Text>
             <TextInput
               style={[{ height }]}
               className='border-2 border-[#2f5456] bg-white rounded-lg p-4 mb-10'
@@ -72,7 +77,7 @@ const ModalComponent = () => {
             />
           </ScrollView>
           <TouchableOpacity
-            onPress={() => setModalVisible(false)} // Close modal on button press
+            onPress={closeModal} // Close modal on button press
             className="bg-[#478385] p-4 rounded-lg mt-5 border-2"
           >
             <Text className="text-white font-bold text-center">Submit</Text>
@@ -87,7 +92,6 @@ const GeminiChat = () => {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [showStopIcon, setShowStopIcon] = useState(false);
   const flatListRef = useRef(null);
   const { setModalVisible } = useContext(ModalContext);
@@ -102,13 +106,6 @@ const GeminiChat = () => {
       const result = await model.generateContent(prompt);
 
       const text = result?.response?.text ? result.response.text() : 'No response available.';
-      showMessage({
-        message: 'Welcome to Gemini Chat 🤖',
-        description: text,
-        type: 'info',
-        icon: 'info',
-        duration: 2000,
-      });
       setMessages([{ text, user: false }]);
     };
     startChat();
@@ -131,24 +128,8 @@ const GeminiChat = () => {
     const text = result?.response?.text ? result.response.text() : 'No response available.';
     setMessages((prevMessages) => [...prevMessages, { text, user: false }]);
 
-    if (text && !isSpeaking) {
-      Speech.speak(text);
-      setIsSpeaking(true);
-      setShowStopIcon(true);
-    }
-
     setLoading(false);
     setUserInput('');
-  };
-
-  const toggleSpeech = () => {
-    if (isSpeaking) {
-      Speech.stop();
-      setIsSpeaking(false);
-    } else {
-      Speech.speak(messages[messages.length - 1]?.text || '');
-      setIsSpeaking(true);
-    }
   };
 
   const ClearMessage = () => {
@@ -158,11 +139,11 @@ const GeminiChat = () => {
 
   const renderMessage = ({ item }) => (
     <View
-      className={`p-3 my-1 rounded-2xl shadow-sm ${
-        item.user ? 'bg-blue-500 self-end' : 'bg-gray-200 self-start'
+      className={`p-3 my-1 rounded-2xl shadow-sm mt-4 mb-10 ${
+        item.user ? 'bg-[#b6d9d7] self-end' : 'bg-[#b6d9d7] self-start'
       } max-w-[80%]`}
     >
-      <Text className={`${item.user ? 'text-white' : 'text-gray-900'} text-lg font-semibold`}>
+      <Text className={`${item.user ? 'text-[#619fa0]' : 'text-gray-900'} text-lg font-semibold`}>
         {item.text}
       </Text>
     </View>
@@ -174,7 +155,9 @@ const GeminiChat = () => {
         barStyle="dark-content"
         backgroundColor="#E9F0E8"
         translucent={false}
+        hidden={false}
       />
+
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -182,25 +165,16 @@ const GeminiChat = () => {
         keyExtractor={(item, index) => index.toString()}
         className="flex-1 mb-2 pt-10 pb-4"
         contentContainerStyle={{ paddingBottom: 10 }}
+        showsVerticalScrollIndicator={false}
       />
-      <View className="flex-row items-center bg-[#88BDBC] p-3 rounded-full shadow-md">
-        <TouchableOpacity
-          className="bg-[#619fa0] p-3 rounded-full shadow-md"
-          onPress={toggleSpeech}
-        >
-          {isSpeaking ? (
-            <FontAwesome name="microphone-slash" size={24} color="white" />
-          ) : (
-            <FontAwesome name="microphone" size={24} color="white" />
-          )}
-        </TouchableOpacity>
+      <View className="flex-row items-center bg-[#88BDBC] p-3 rounded-3xl shadow-md">
         <TextInput
           placeholder="Type a message"
           onChangeText={setUserInput}
           value={userInput}
           onSubmitEditing={sendMessage}
           className="flex-1 mx-3 p-3 bg-[#b6d9d7] rounded-full shadow-sm text-gray-800 placeholder-gray-500"
-          placeholderTextColor="#aaa"
+          placeholderTextColor="#dbeceb"
         />
         {showStopIcon && (
           <TouchableOpacity
@@ -213,11 +187,10 @@ const GeminiChat = () => {
         {loading && <ActivityIndicator size="large" color="#4B5563" className="ml-2" />}
       </View>
 
-      <ModalComponent/>
+      <ModalComponent />
       
     </View>
   );
 };
-
 
 export default GeminiChat;

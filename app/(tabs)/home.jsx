@@ -31,7 +31,7 @@ export default function HomeTab() {
 
         <View className="my-10 w-4/5">
           <Text className="text-base text-center text-[#3B3B3B] mb-2">
-            Adjust the slider to set your current stress level from a scale of 1-10:
+            Adjust the slider to set your current stress level from a scale of 1-5:
           </Text>
 
           <Slider
@@ -56,9 +56,14 @@ export default function HomeTab() {
         </View>
 
         <CustomButton
-          title="Get Suggestions"
+          title="Submit Mood"
           handlePress={handleOpenModal} // Trigger modal visibility and navigation
-          containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 10 }}
+          containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 10, marginBottom: 10 }}
+        />
+        <CustomButton
+          title="Get Food Suggestions"
+          handlePress={handleOpenModal} // Trigger modal visibility and navigation
+          containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 15 }}
         />
       </View>
     </SafeAreaView>
