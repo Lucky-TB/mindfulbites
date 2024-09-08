@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useContext } from 'react';
-import { View, Text, Dimensions, Modal } from 'react-native';
+import React, { useState, useCallback, useContext, useEffect } from 'react';
+import { View, Text, Dimensions, Modal, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import CustomButton from '../../components/CustomButton';
@@ -12,19 +12,15 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function SettingsTab() {
   const [currentMood, setCurrentMood] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const { moodHistory } = useContext(MoodContext);
+  const { moodHistory, loadMoodHistory } = useContext(MoodContext);
 
   const generateChartData = () => {
-    if (moodHistory.length === 0) {
-      return []; // Return empty data for chart if no mood history
-    }
     return moodHistory.map((mood, index) => ({ x: `Entry ${index + 1}`, y: mood + 1 }));
   };
 
   const loadCurrentMood = useCallback(async () => {
     try {
       const storedMood = await AsyncStorage.getItem('@current_mood');
-      console.log('Loaded Mood:', storedMood); // Debugging line
       setCurrentMood(storedMood || '0');
     } catch (error) {
       console.error('Error loading current mood:', error);
@@ -34,7 +30,8 @@ export default function SettingsTab() {
   useFocusEffect(
     useCallback(() => {
       loadCurrentMood();
-    }, [loadCurrentMood])
+      loadMoodHistory();
+    }, [loadCurrentMood, loadMoodHistory])
   );
 
   const getMoodColor = (mood) => {
@@ -47,6 +44,35 @@ export default function SettingsTab() {
       default: return '#88bdbc';
     }
   };
+
+  const resetMoodHistory = async () => {
+    try {
+      await AsyncStorage.removeItem('@mood_history');
+      loadMoodHistory(); // Update state after reset
+    } catch (error) {
+      console.error('Error resetting mood history:', error);
+    }
+  };
+
+  // Function to check if it's time to reset mood history
+  const checkTimeAndReset = () => {
+    const now = new Date();
+    const targetHour = 0; // Midnight
+    const targetMinute = 0; // 30 minutes past the hour
+
+    if (now.getHours() === targetHour && now.getMinutes() === targetMinute) {
+      resetMoodHistory();
+    }
+  };
+
+  useEffect(() => {
+    // Check time and reset every minute
+    const interval = 60 * 1000; // 1 minute in milliseconds
+    const timer = setInterval(checkTimeAndReset, interval);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <View className="flex-1 justify-center items-center p-5 bg-[#dbeceb]">
@@ -127,9 +153,23 @@ export default function SettingsTab() {
               <Text className="text-3xl text-center mb-36 mt-20 font-bold text-[black]">No data entered</Text>
             )}
             <CustomButton
+              title="Reset Data" 
+              handlePress={() => {
+                Alert.alert(
+                  'Reset Data',
+                  'Are you sure you want to reset the chart data?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'OK', onPress: resetMoodHistory }
+                  ]
+                );
+              }}
+              containerStyles={{ marginBottom: 12 }}
+            />
+            <CustomButton
               title="Close" 
               handlePress={() => setModalVisible(false)}
-              containerStyles={{ marginTop: 175, border: 2 }}
+              containerStyles={{ marginTop: 95, border: 2 }}
             />
           </View>
         </BlurView>

@@ -1,36 +1,38 @@
-import React, { useContext, useState } from 'react';
-import { View, Text, Dimensions} from 'react-native';
+import React, { useContext, useState, useCallback } from 'react';
+import { View, Text, Dimensions, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import CustomButton from '../../components/CustomButton';
-import { ModalContext } from '../../components/ModalContext';
-import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MoodContext } from '../../components/MoodContext'; // Import MoodContext
-import { Alert } from 'react-native';
+import { ModalContext } from '../../components/ModalContext';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function HomeTab() {
   const navigation = useNavigation();
+  const { setMood, addMood, moodHistory } = useContext(MoodContext); // Get moodHistory from MoodContext
   const { setModalVisible } = useContext(ModalContext);
-  const { setMood, addMood} = useContext(MoodContext); // Get setMood from MoodContext
   const [stressLevel, setStressLevel] = useState(0); // Initialize with 0
-
-
-
 
   const handleStressLevelChange = (value) => {
     setStressLevel(value); // Set stress level based on slider
   };
 
   const handleSubmitMood = async () => {
+    if (moodHistory.length >= 5) {
+      Alert.alert('Limit Reached', 'You can only enter mood data up to 5 times.');
+      return;
+    }
+
     try {
-      // Save the stress level to AsyncStorage
-      await AsyncStorage.setItem('@current_mood', String(stressLevel)); 
-      setMood(stressLevel); // Update the mood globally in the context
-      addMood(stressLevel);
-      console.log('Mood saved and updated:', stressLevel + 1);
+      // Save the rounded stress level to AsyncStorage
+      const roundedStressLevel = Math.round(stressLevel);
+      await AsyncStorage.setItem('@current_mood', String(roundedStressLevel)); 
+      setMood(roundedStressLevel); // Update the mood globally in the context
+      addMood(roundedStressLevel);
+      console.log('Mood saved and updated:', roundedStressLevel);
       Alert.alert('Mood Saved! 😊');
     } catch (error) {
       console.error('Error saving mood:', error);
@@ -58,7 +60,7 @@ export default function HomeTab() {
             style={{ width: '100%', height: 40 }}
             minimumValue={0}
             maximumValue={4}
-            step={1}
+            step={0.5}
             value={stressLevel}
             onValueChange={handleStressLevelChange}
             minimumTrackTintColor="#88BDBC"
@@ -70,7 +72,7 @@ export default function HomeTab() {
             {[1, 2, 3, 4, 5].map((val) => (
               <Text
                 key={val}
-                className={`text-[#3B3B3B] ${stressLevel + 1 === val ? 'text-[#88BDBC]' : ''}`}
+                className={`text-[#3B3B3B] ${Math.round(stressLevel) + 1 === val ? 'text-[#88BDBC]' : ''}`}
               >
                 {val}
               </Text>
@@ -82,7 +84,6 @@ export default function HomeTab() {
           title="Submit Mood"
           handlePress={handleSubmitMood}
           containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 10, marginBottom: 10 }}
-          
         />
         <CustomButton
           title="Ask Munchie"
