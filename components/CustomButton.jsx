@@ -18,7 +18,7 @@ const CustomButton = ({ title, handlePress, containerStyles, textStyles, isLoadi
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#88BDBC',
+    backgroundColor: '#88bdbc',
     borderRadius: 10,
     minHeight: 70,
     justifyContent: 'center',

@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import { View, Text, Dimensions} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
@@ -7,14 +7,18 @@ import CustomButton from '../../components/CustomButton';
 import { ModalContext } from '../../components/ModalContext';
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
 import { MoodContext } from '../../components/MoodContext'; // Import MoodContext
+import { Alert } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function HomeTab() {
   const navigation = useNavigation();
   const { setModalVisible } = useContext(ModalContext);
-  const { setMood } = useContext(MoodContext); // Get setMood from MoodContext
+  const { setMood, addMood} = useContext(MoodContext); // Get setMood from MoodContext
   const [stressLevel, setStressLevel] = useState(0); // Initialize with 0
+
+
+
 
   const handleStressLevelChange = (value) => {
     setStressLevel(value); // Set stress level based on slider
@@ -25,7 +29,9 @@ export default function HomeTab() {
       // Save the stress level to AsyncStorage
       await AsyncStorage.setItem('@current_mood', String(stressLevel)); 
       setMood(stressLevel); // Update the mood globally in the context
+      addMood(stressLevel);
       console.log('Mood saved and updated:', stressLevel + 1);
+      Alert.alert('Mood Saved! 😊');
     } catch (error) {
       console.error('Error saving mood:', error);
     }
@@ -52,7 +58,7 @@ export default function HomeTab() {
             style={{ width: '100%', height: 40 }}
             minimumValue={0}
             maximumValue={4}
-            step={0.5}
+            step={1}
             value={stressLevel}
             onValueChange={handleStressLevelChange}
             minimumTrackTintColor="#88BDBC"
@@ -76,6 +82,7 @@ export default function HomeTab() {
           title="Submit Mood"
           handlePress={handleSubmitMood}
           containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 10, marginBottom: 10 }}
+          
         />
         <CustomButton
           title="Ask Munchie"
