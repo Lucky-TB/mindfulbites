@@ -104,7 +104,6 @@ const GeminiChat = () => {
   const [showStopIcon, setShowStopIcon] = useState(false);
   const flatListRef = useRef(null);
   const { setModalVisible } = useContext(ModalContext);
-  const { recipes, saveRecipesToStorage } = useAsyncStorageRecipes
   const API_KEY = GEMINI_API_KEY;
 
   useEffect(() => {
@@ -236,14 +235,14 @@ const GeminiChat = () => {
         showsVerticalScrollIndicator={false}
       />
 
-      <View className="flex-row items-center bg-[#88BDBC] p-3 rounded-3xl shadow-md">
+      <View className="flex-row items-center bg-[] rounded-3xl">
         <TextInput
           placeholder="Type a message"
           onChangeText={setUserInput}
           value={userInput}
           onSubmitEditing={sendMessage}
-          className="flex-1 mx-3 p-3 bg-[#b6d9d7] rounded-full shadow-sm text-gray-800 placeholder-gray-500"
-          placeholderTextColor="#dbeceb"
+          className="border-2 flex-1 mx-1 p-3 bg-[#b6d9d7] rounded-full text-gray-800 placeholder-black"
+          placeholderTextColor="black"
         />
         {showStopIcon && (
           <TouchableOpacity

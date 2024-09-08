@@ -5,13 +5,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import CustomButton from '../../components/CustomButton';
 import { ModalContext } from '../../components/ModalContext';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import { MoodContext } from '../../components/MoodContext'; // Import MoodContext
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function HomeTab() {
   const navigation = useNavigation();
   const { setModalVisible } = useContext(ModalContext);
+  const { setMood } = useContext(MoodContext); // Get setMood from MoodContext
   const [stressLevel, setStressLevel] = useState(0); // Initialize with 0
 
   const handleStressLevelChange = (value) => {
@@ -22,7 +24,8 @@ export default function HomeTab() {
     try {
       // Save the stress level to AsyncStorage
       await AsyncStorage.setItem('@current_mood', String(stressLevel)); 
-      console.log('Mood saved:', stressLevel + 1);
+      setMood(stressLevel); // Update the mood globally in the context
+      console.log('Mood saved and updated:', stressLevel + 1);
     } catch (error) {
       console.error('Error saving mood:', error);
     }

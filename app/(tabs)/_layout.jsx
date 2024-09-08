@@ -1,6 +1,7 @@
 import { View, Text, Image } from 'react-native'
 import { Tabs, Redirect} from 'expo-router';
 import { ModalProvider } from '../../components/ModalContext';
+import { MoodProvider } from '../../components/MoodContext';
 
 import { icons } from '../../constants';
 
@@ -24,6 +25,7 @@ const TabIcon = ({ icon, color, name, focused }) => {
 
 const TabsLayout = () => {
   return (
+    <MoodProvider>
     <ModalProvider>
         <Tabs
           screenOptions={{
@@ -94,7 +96,7 @@ const TabsLayout = () => {
                     )
                 }}
             />
-            <Tabs.Screen
+            {/*<Tabs.Screen
                 name="test"
                 options={{ title: 'test',
                     headerShown: false,
@@ -107,9 +109,10 @@ const TabsLayout = () => {
                       />
                     )
                 }}
-            />
+              />*/}
         </Tabs>
     </ModalProvider>
+    </MoodProvider>
   )
 }
 

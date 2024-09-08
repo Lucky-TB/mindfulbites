@@ -1,51 +1,48 @@
-// components/asyncStorageRecipes.jsx
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
 
-const STORAGE_KEY = '@last_recipes';
+const STORAGE_KEY = '@current_mood';
 
-const useAsyncStorageRecipes = () => {
-  const [recipes, setRecipes] = useState([]);
+const useAsyncStorageMood = () => {
+  const [mood, setMood] = useState(0); // Default mood value
 
-  const saveRecipesToStorage = async (newRecipes) => {
+  const saveMoodToStorage = async (newMood) => {
     try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newRecipes));
-      setRecipes(newRecipes);
+      await AsyncStorage.setItem(STORAGE_KEY, String(newMood));
+      setMood(newMood);
     } catch (error) {
-      console.error('Error saving recipes to storage:', error);
+      console.error('Error saving mood to storage:', error);
     }
   };
 
-  const loadRecipesFromStorage = async () => {
+  const loadMoodFromStorage = async () => {
     try {
-      const savedRecipes = await AsyncStorage.getItem(STORAGE_KEY);
-      if (savedRecipes) {
-        setRecipes(JSON.parse(savedRecipes));
-      }
+      const savedMood = await AsyncStorage.getItem(STORAGE_KEY);
+      setMood(savedMood !== null ? parseInt(savedMood) : 0);
     } catch (error) {
-      console.error('Error loading recipes from storage:', error);
+      console.error('Error loading mood from storage:', error);
     }
   };
 
-  const deleteAllRecipes = async () => {
+  const deleteMoodFromStorage = async () => {
     try {
       await AsyncStorage.removeItem(STORAGE_KEY);
-      setRecipes([]);
+      setMood(0); // Reset to default mood value
     } catch (error) {
-      console.error('Error deleting recipes from storage:', error);
+      console.error('Error deleting mood from storage:', error);
     }
   };
 
   useEffect(() => {
-    loadRecipesFromStorage();
+    loadMoodFromStorage();
   }, []);
 
   return {
-    recipes,
-    saveRecipesToStorage,
-    loadRecipesFromStorage,
-    deleteAllRecipes
+    mood,
+    saveMoodToStorage,
+    loadMoodFromStorage,
+    deleteMoodFromStorage
   };
 };
 
-export default useAsyncStorageRecipes;
+export default useAsyncStorageMood;

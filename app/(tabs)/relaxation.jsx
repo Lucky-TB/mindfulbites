@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, Alert, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Audio } from 'expo-av';
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
@@ -7,11 +7,22 @@ import CustomButton from '../../components/CustomButton'; // Make sure the path 
 
 const { width: screenWidth } = Dimensions.get('window');
 
+// Updated breathing steps to include an additional "Hold" after "Exhale"
+const breathingSteps = [
+  { instruction: 'Inhale', duration: 4 },
+  { instruction: 'Hold', duration: 2 },
+  { instruction: 'Exhale', duration: 4 },
+  { instruction: 'Hold', duration: 2 }, // Additional Hold step
+];
+
 export default function Relaxation() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [key, setKey] = useState(0); // Used to reset the timer
   const [sound, setSound] = useState();
   const [duration, setDuration] = useState(60); // State for timer duration
+  const [currentStep, setCurrentStep] = useState(0);
+  const [breathingTimeLeft, setBreathingTimeLeft] = useState(breathingSteps[0].duration);
+  const fadeAnim = useState(new Animated.Value(1))[0]; // Animation for inhale-exhale
 
   // Function to play a sound when the timer starts
   const playSound = async () => {
@@ -66,6 +77,39 @@ export default function Relaxation() {
     );
   };
 
+  // Breathing animation logic
+  useEffect(() => {
+    if (isPlaying) {
+      // Handle the countdown for the current breathing step
+      const breathingInterval = setInterval(() => {
+        setBreathingTimeLeft((prev) => {
+          if (prev === 1) {
+            // Move to the next step in the breathing cycle
+            setCurrentStep((prevStep) => (prevStep + 1) % breathingSteps.length);
+            return breathingSteps[(currentStep + 1) % breathingSteps.length].duration;
+          }
+          return prev - 1;
+        });
+
+        // Fade in and out animation for the inhale/hold/exhale text
+        Animated.sequence([
+          Animated.timing(fadeAnim, {
+            toValue: 0.3,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 1000);
+
+      return () => clearInterval(breathingInterval);
+    }
+  }, [isPlaying, fadeAnim, currentStep]);
+
   return (
     <SafeAreaView className="flex-1 bg-[#dbeceb] justify-center items-center">
       <Text className="text-xl font-bold text-[#3B3B3B] mb-6 text-center">
@@ -91,6 +135,18 @@ export default function Relaxation() {
         )}
       </CountdownCircleTimer>
 
+      <Animated.Text
+        style={{
+          fontSize: 24,
+          color: '#3B3B3B',
+          fontWeight: 'bold',
+          marginTop: 20,
+          opacity: fadeAnim,
+        }}
+      >
+        {breathingSteps[currentStep].instruction} - {breathingTimeLeft} sec
+      </Animated.Text>
+
       <CustomButton
         title={isPlaying ? 'Pause' : 'Start Relaxation'}
         handlePress={() => setIsPlaying(!isPlaying)}
@@ -102,6 +158,8 @@ export default function Relaxation() {
         handlePress={() => {
           setKey((prevKey) => prevKey + 1);
           setIsPlaying(false);
+          setCurrentStep(0);
+          setBreathingTimeLeft(breathingSteps[0].duration);
         }}
         containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 20 }}
       />

@@ -1,13 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import { View, Text, Dimensions, Modal, TouchableOpacity, Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomButton from '../../components/CustomButton'; // Make sure the path is correct
+import { BlurView } from 'expo-blur'; // Import BlurView
+import { LineChart } from 'react-native-chart-kit';
 
 const { width: screenWidth } = Dimensions.get('window');
 
+const Monthdata = {
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  datasets: [
+    {
+      data: [1, 3, 2, 5, 4, 6, 7, 5, 8, 3, 5, 9],
+    },
+  ],
+};
+
+const Weekdata = {
+  labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+  datasets: [
+    {
+      data: [2, 5, 3, 7, 6],
+    },
+  ],
+};
+
+const Daydata = {
+  labels: ['Morning', 'Mid-Day', 'Afternoon', 'Evening'],
+  datasets: [
+    {
+      data: [4, 6, 2, 8],
+    },
+  ],
+};
+
 export default function SettingsTab() {
   const [currentMood, setCurrentMood] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [chartData, setChartData] = useState(null);
 
-  // Load the current mood when the component mounts
+  // Load the current mood 
   useEffect(() => {
     const loadCurrentMood = async () => {
       try {
@@ -32,6 +64,11 @@ export default function SettingsTab() {
     }
   };
 
+  const showChart = (data) => {
+    setChartData(data);
+    setModalVisible(true);
+  };
+
   return (
     <View className="flex-1 justify-center items-center p-5 bg-[#dbeceb]">
       <Text className="text-2xl font-bold text-[#88bdbc] mb-5">Current Mood</Text>
@@ -45,12 +82,74 @@ export default function SettingsTab() {
           backgroundColor: getMoodColor(currentMood), // Color based on mood
           justifyContent: 'center',
           alignItems: 'center',
+          marginBottom: 20, // Add some margin to create space for the button
         }}
       >
         <Text className="text-4xl font-bold text-white">
           {currentMood ? `${parseInt(currentMood) + 1}/5` : 'No mood set'}
         </Text>
       </View>
+
+      {/* Check Data Button */}
+      <CustomButton 
+        title="Check Data" 
+        handlePress={() => setModalVisible(true)} 
+        containerStyles={{ width: screenWidth * 0.7, height: 50, marginTop: 10 }}
+      />
+
+      {/* Modal for displaying the chart */}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <BlurView intensity={10} className="flex-1 justify-center items-center bg-[rgba(0,0,0,0.5)]">
+          <View className="w-[90%] h-[70%] bg-[#b6d9d7] rounded-lg p-4 border-[#88bdbc] border-[2px] shadow-2xl">
+            {chartData && (
+              <View className="mb-4">
+                <LineChart
+                  data={chartData}
+                  width={screenWidth - 70}
+                  height={200}
+                  chartConfig={{
+                    backgroundColor: '#88BDBC',
+                    backgroundGradientFrom: '#88BDBC',
+                    backgroundGradientTo: '#37686a',
+                    decimalPlaces: 2,
+                    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                    style: {
+                      borderRadius: 16,
+                    },
+                  }}
+                  style={{ marginVertical: 8, borderRadius: 16, }}
+                />
+              </View>
+            )}
+            <View className="mb-4">
+              <CustomButton 
+                  title="Show Monthly Data" 
+                  handlePress={() => showChart(Monthdata)} 
+                  containerStyles={{ marginBottom: 12 }} // Adjust the value as needed
+              />
+              <CustomButton 
+                  title="Show Weekly Data" 
+                  handlePress={() => showChart(Weekdata)} 
+                  containerStyles={{ marginBottom: 12 }} // Adjust the value as needed
+              />
+              <CustomButton 
+                  title="Show Daily Data" 
+                  handlePress={() => showChart(Daydata)} 
+                  containerStyles={{ marginBottom: 12 }} // Adjust the value as needed
+              />
+            </View>
+            <CustomButton
+              title="Close" 
+              handlePress={() => setModalVisible(false)}
+            />
+          </View>
+        </BlurView>
+      </Modal>
     </View>
   );
 }
