@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import CustomButton from '../../components/CustomButton';
 import { BlurView } from 'expo-blur';
-import { LineChart } from 'react-native-chart-kit';
+import { VictoryChart, VictoryLine, VictoryAxis, VictoryScatter } from 'victory-native';
 import { MoodContext } from '../../components/MoodContext';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -16,21 +16,15 @@ export default function SettingsTab() {
 
   const generateChartData = () => {
     if (moodHistory.length === 0) {
-      return { labels: [], datasets: [] }; // Return empty data for chart if no mood history
+      return []; // Return empty data for chart if no mood history
     }
-    return {
-      labels: moodHistory.map((_, index) => `Entry ${index + 1}`),
-      datasets: [
-        {
-          data: moodHistory.map(mood => mood + 1),
-        },
-      ],
-    };
+    return moodHistory.map((mood, index) => ({ x: `Entry ${index + 1}`, y: mood + 1 }));
   };
 
   const loadCurrentMood = useCallback(async () => {
     try {
       const storedMood = await AsyncStorage.getItem('@current_mood');
+      console.log('Loaded Mood:', storedMood); // Debugging line
       setCurrentMood(storedMood || '0');
     } catch (error) {
       console.error('Error loading current mood:', error);
@@ -90,49 +84,52 @@ export default function SettingsTab() {
           <View className="w-[90%] h-[70%] bg-[#b6d9d7] rounded-lg p-4 border-[#88bdbc] border-[2px] shadow-2xl">
             {moodHistory.length > 0 ? (
               <View className="mb-4">
-                <LineChart
-                  data={generateChartData()}
+                <VictoryChart
                   width={screenWidth - 70}
-                  height={200}
-                  withInnerLines={false}
-                  fromZero={true}
-                  bezier
-                  chartConfig={{
-                    backgroundColor: '#88BDBC',
-                    backgroundGradientFrom: '#88BDBC',
-                    backgroundGradientTo: '#37686a',
-                    decimalPlaces: 0,
-                    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                    style: {
-                      borderRadius: 16,
-                    },
-                  }}
-                  style={{ marginVertical: 8, borderRadius: 16, }}
-                />
+                  height={300}
+                  domainPadding={20}
+                  style={{ parent: { borderRadius: 16 } }}
+                >
+                  <VictoryAxis
+                    style={{
+                      axis: { stroke: "#2f5456" }, // Darker axis color
+                      tickLabels: { fill: "#2f5456" },
+                      grid: { stroke: "none" } // Remove grid lines
+                    }}
+                  />
+                  <VictoryAxis
+                    dependentAxis
+                    domain={[1, 5]}
+                    tickValues={[1, 2, 3, 4, 5]}
+                    style={{
+                      axis: { stroke: "#2f5456" }, // Darker axis color
+                      tickLabels: { fill: "#2f5456" },
+                      grid: { stroke: "none" } // Remove grid lines
+                    }}
+                  />
+                  <VictoryLine
+                    data={generateChartData()}
+                    style={{
+                      data: { stroke: "#2f5456", strokeWidth: 3 }, // Darker line color
+                      parent: { border: "1px solid #2f5456" }
+                    }}
+                  />
+                  <VictoryScatter
+                    data={generateChartData()}
+                    size={6}
+                    style={{
+                      data: { fill: "#2f5456" } // Darker point color
+                    }}
+                  />
+                </VictoryChart>
               </View>
             ) : (
-              <Text className="text-xl text-center text-[#88bdbc]">No data entered</Text>
+              <Text className="text-3xl text-center mb-36 mt-20 font-bold text-[black]">No data entered</Text>
             )}
-            <View className="mb-4">
-              <CustomButton 
-                title="Show Monthly Data" 
-                handlePress={() => setModalVisible(true)} 
-                containerStyles={{ marginBottom: 12 }}
-              />
-              <CustomButton 
-                title="Show Weekly Data" 
-                handlePress={() => setModalVisible(true)} 
-                containerStyles={{ marginBottom: 12 }}
-              />
-              <CustomButton 
-                title="Show Daily Data" 
-                handlePress={() => setModalVisible(true)} 
-                containerStyles={{ marginBottom: 12 }}
-              />
-            </View>
             <CustomButton
               title="Close" 
               handlePress={() => setModalVisible(false)}
+              containerStyles={{ marginTop: 175, border: 2 }}
             />
           </View>
         </BlurView>

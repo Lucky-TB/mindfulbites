@@ -7,8 +7,8 @@ import CustomButton from '../../components/CustomButton'; // Make sure the path 
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Updated breathing steps to include an additional "Hold" after "Exhale"
-const breathingSteps = [
+// Default breathing steps with initial durations
+const defaultBreathingSteps = [
   { instruction: 'Inhale', duration: 4 },
   { instruction: 'Hold', duration: 2 },
   { instruction: 'Exhale', duration: 4 },
@@ -21,6 +21,7 @@ export default function Relaxation() {
   const [sound, setSound] = useState();
   const [duration, setDuration] = useState(60); // State for timer duration
   const [currentStep, setCurrentStep] = useState(0);
+  const [breathingSteps, setBreathingSteps] = useState(defaultBreathingSteps);
   const [breathingTimeLeft, setBreathingTimeLeft] = useState(breathingSteps[0].duration);
   const fadeAnim = useState(new Animated.Value(1))[0]; // Animation for inhale-exhale
 
@@ -49,7 +50,7 @@ export default function Relaxation() {
     playSound();
   };
 
-  // Function to change the timer duration
+  // Function to change the main timer duration
   const changeDuration = () => {
     Alert.prompt(
       'Set Timer Duration',
@@ -75,6 +76,53 @@ export default function Relaxation() {
       'plain-text',
       `${duration}` // Default value as the current duration
     );
+  };
+
+  // Function to prompt for durations of all breathing steps
+  const promptForBreathingDurations = () => {
+    const updatedSteps = [...breathingSteps]; // Copy the steps to update durations
+
+    const promptSequence = (stepIndex = 0) => {
+      if (stepIndex >= updatedSteps.length) {
+        setBreathingSteps(updatedSteps); // Update breathing steps after all prompts
+        setBreathingTimeLeft(updatedSteps[0].duration); // Set the initial time left to the first step's duration
+        return; // End sequence
+      }
+
+      const currentStep = updatedSteps[stepIndex];
+
+      Alert.prompt(
+        `Set ${currentStep.instruction} Duration`,
+        `Enter the duration for ${currentStep.instruction} in seconds:`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => {
+              // Reset to default durations if the sequence is canceled
+              setBreathingSteps(defaultBreathingSteps);
+              setBreathingTimeLeft(defaultBreathingSteps[0].duration);
+            },
+          },
+          {
+            text: 'OK',
+            onPress: (input) => {
+              const newDuration = parseInt(input, 10);
+              if (!isNaN(newDuration) && newDuration > 0) {
+                updatedSteps[stepIndex].duration = newDuration; // Update the step's duration
+                promptSequence(stepIndex + 1); // Move to the next step
+              } else {
+                Alert.alert('Invalid Input', 'Please enter a positive number.');
+              }
+            },
+          },
+        ],
+        'plain-text',
+        `${currentStep.duration}` // Default value as the current step's duration
+      );
+    };
+
+    promptSequence(); // Start the sequence
   };
 
   // Breathing animation logic
@@ -108,7 +156,7 @@ export default function Relaxation() {
 
       return () => clearInterval(breathingInterval);
     }
-  }, [isPlaying, fadeAnim, currentStep]);
+  }, [isPlaying, fadeAnim, currentStep, breathingSteps]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#dbeceb] justify-center items-center">
@@ -135,17 +183,19 @@ export default function Relaxation() {
         )}
       </CountdownCircleTimer>
 
-      <Animated.Text
-        style={{
-          fontSize: 24,
-          color: '#3B3B3B',
-          fontWeight: 'bold',
-          marginTop: 20,
-          opacity: fadeAnim,
-        }}
-      >
-        {breathingSteps[currentStep].instruction} - {breathingTimeLeft} sec
-      </Animated.Text>
+      <TouchableOpacity onPress={promptForBreathingDurations}>
+        <Animated.Text
+          style={{
+            fontSize: 24,
+            color: '#3B3B3B',
+            fontWeight: 'bold',
+            marginTop: 20,
+            opacity: fadeAnim,
+          }}
+        >
+          {breathingSteps[currentStep].instruction} - {breathingTimeLeft} sec
+        </Animated.Text>
+      </TouchableOpacity>
 
       <CustomButton
         title={isPlaying ? 'Pause' : 'Start Relaxation'}
