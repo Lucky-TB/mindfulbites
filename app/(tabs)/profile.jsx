@@ -14,7 +14,7 @@ export default function SettingsTab() {
   const [modalVisible, setModalVisible] = useState(false);
   const { moodHistory, loadMoodHistory } = useContext(MoodContext);
 
-  const generateChartData = () => {
+  const generateChartData = () => { //sets chart data to the ata in async
     return moodHistory.map((mood, index) => ({ x: `Entry ${index + 1}`, y: mood + 1 }));
   };
 
@@ -48,17 +48,17 @@ export default function SettingsTab() {
   const resetMoodHistory = async () => {
     try {
       await AsyncStorage.removeItem('@mood_history');
-      loadMoodHistory(); // Update state after reset
+      loadMoodHistory();
     } catch (error) {
       console.error('Error resetting mood history:', error);
     }
   };
 
-  // Function to check if it's time to reset mood history
-  const checkTimeAndReset = () => {
+
+  const checkTimeAndReset = () => { //auto reset at midnight
     const now = new Date();
-    const targetHour = 0; // Midnight
-    const targetMinute = 0; // 30 minutes past the hour
+    const targetHour = 0;
+    const targetMinute = 0;
 
     if (now.getHours() === targetHour && now.getMinutes() === targetMinute) {
       resetMoodHistory();
@@ -66,11 +66,11 @@ export default function SettingsTab() {
   };
 
   useEffect(() => {
-    // Check time and reset every minute
-    const interval = 60 * 1000; // 1 minute in milliseconds
+
+    const interval = 60 * 1000;
     const timer = setInterval(checkTimeAndReset, interval);
 
-    // Clean up interval on component unmount
+
     return () => clearInterval(timer);
   }, []);
 
@@ -110,7 +110,7 @@ export default function SettingsTab() {
           <View className="w-[90%] h-[70%] bg-[#b6d9d7] rounded-lg p-4 border-[#88bdbc] border-[2px] shadow-2xl">
             {moodHistory.length > 0 ? (
               <View className="mb-4">
-                <VictoryChart
+                <VictoryChart //chart to show data using victory
                   width={screenWidth - 70}
                   height={300}
                   domainPadding={20}
@@ -119,9 +119,9 @@ export default function SettingsTab() {
                 >
                   <VictoryAxis
                     style={{
-                      axis: { stroke: "#2f5456" }, // Darker axis color
+                      axis: { stroke: "#2f5456" },
                       tickLabels: { fill: "#2f5456" },
-                      grid: { stroke: "none" } // Remove grid lines
+                      grid: { stroke: "none" }
                     }}
                   />
                   <VictoryAxis
@@ -129,15 +129,15 @@ export default function SettingsTab() {
                     domain={[1, 5]}
                     tickValues={[1, 2, 3, 4, 5]}
                     style={{
-                      axis: { stroke: "#2f5456" }, // Darker axis color
+                      axis: { stroke: "#2f5456" },
                       tickLabels: { fill: "#2f5456" },
-                      grid: { stroke: "none" } // Remove grid lines
+                      grid: { stroke: "none" }
                     }}
                   />
                   <VictoryLine
                     data={generateChartData()}
                     style={{
-                      data: { stroke: "#2f5456", strokeWidth: 3 }, // Darker line color
+                      data: { stroke: "#2f5456", strokeWidth: 3 },
                       parent: { border: "1px solid #2f5456" }
                     }}
                   />
@@ -145,7 +145,7 @@ export default function SettingsTab() {
                     data={generateChartData()}
                     size={6}
                     style={{
-                      data: { fill: "#2f5456" } // Darker point color
+                      data: { fill: "#2f5456" }
                     }}
                   />
                 </VictoryChart>
@@ -155,7 +155,7 @@ export default function SettingsTab() {
             )}
             <CustomButton
               title="Reset Data" 
-              handlePress={() => {
+              handlePress={() => { // reset data button and alerts
                 Alert.alert(
                   'Reset Data',
                   'Are you sure you want to reset the chart data?',
@@ -168,7 +168,7 @@ export default function SettingsTab() {
               containerStyles={{ marginTop: 145 }}
             />
             <CustomButton
-              title="Close" 
+              title="Close"  //close button and set modal false
               handlePress={() => setModalVisible(false)}
               containerStyles={{ marginTop: 15, border: 2 }}
             />

@@ -3,7 +3,7 @@ import { SplashScreen, Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 
-// Prevent auto hide of splash screen
+
 SplashScreen.preventAutoHideAsync();
 
 const RootLayout = () => {
@@ -29,13 +29,12 @@ const RootLayout = () => {
   return (
     <Stack
       screenOptions={{
-        // Configure transition settings
-        animation: 'fade', // Fades between screens instead of swiping
+
+        animation: 'fade', 
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      {/* <Stack.Screen name="/search/[query]" options={{ headerShown: false }} /> */}
     </Stack>
   );
 };

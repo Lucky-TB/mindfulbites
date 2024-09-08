@@ -3,39 +3,39 @@ import { View, Text, TouchableOpacity, Dimensions, Alert, Animated, Easing } fro
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Audio } from 'expo-av';
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
-import CustomButton from '../../components/CustomButton'; // Make sure the path is correct
+import CustomButton from '../../components/CustomButton'; 
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Default breathing steps with initial durations
+
 const defaultBreathingSteps = [
   { instruction: 'Inhale', duration: 4 },
   { instruction: 'Hold', duration: 2 },
   { instruction: 'Exhale', duration: 4 },
-  { instruction: 'Hold', duration: 2 }, // Additional Hold step
+  { instruction: 'Hold', duration: 2 },
 ];
 
 export default function Relaxation() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [key, setKey] = useState(0); // Used to reset the timer
+  const [key, setKey] = useState(0);
   const [sound, setSound] = useState();
-  const [duration, setDuration] = useState(60); // State for timer duration
+  const [duration, setDuration] = useState(60);
   const [currentStep, setCurrentStep] = useState(0);
   const [breathingSteps, setBreathingSteps] = useState(defaultBreathingSteps);
   const [breathingTimeLeft, setBreathingTimeLeft] = useState(breathingSteps[0].duration);
-  const fadeAnim = useState(new Animated.Value(1))[0]; // Animation for inhale-exhale
-  const scaleAnim = useState(new Animated.Value(1))[0]; // Animation for pulse effect
+  const fadeAnim = useState(new Animated.Value(1))[0]; 
+  const scaleAnim = useState(new Animated.Value(1))[0];
 
-  // Function to play a sound when the timer starts
+
   const playSound = async () => {
     const { sound } = await Audio.Sound.createAsync(
-      require('../../assets/meditation-bell.mp3') // Ensure you have this sound file in the assets folder
+      require('../../assets/meditation-bell.mp3')
     );
     setSound(sound);
     await sound.playAsync();
   };
 
-  // Cleanup sound when the component unmounts
+
   useEffect(() => {
     return sound
       ? () => {
@@ -44,14 +44,13 @@ export default function Relaxation() {
       : undefined;
   }, [sound]);
 
-  // Function to handle timer completion
   const handleComplete = () => {
     setIsPlaying(false);
-    setKey((prevKey) => prevKey + 1); // Reset the timer
+    setKey((prevKey) => prevKey + 1);
     playSound();
   };
 
-  // Function to change the main timer duration
+
   const changeDuration = () => {
     Alert.prompt(
       'Set Timer Duration',
@@ -67,7 +66,7 @@ export default function Relaxation() {
             const newDuration = parseInt(input, 10);
             if (!isNaN(newDuration) && newDuration > 0) {
               setDuration(newDuration);
-              setKey((prevKey) => prevKey + 1); // Reset the timer with new duration
+              setKey((prevKey) => prevKey + 1);
             } else {
               Alert.alert('Invalid Input', 'Please enter a positive number.');
             }
@@ -75,19 +74,19 @@ export default function Relaxation() {
         },
       ],
       'plain-text',
-      `${duration}` // Default value as the current duration
+      `${duration}` 
     );
   };
 
-  // Function to prompt for durations of all breathing steps
+
   const promptForBreathingDurations = () => {
-    const updatedSteps = [...breathingSteps]; // Copy the steps to update durations
+    const updatedSteps = [...breathingSteps]; 
 
     const promptSequence = (stepIndex = 0) => {
       if (stepIndex >= updatedSteps.length) {
-        setBreathingSteps(updatedSteps); // Update breathing steps after all prompts
-        setBreathingTimeLeft(updatedSteps[0].duration); // Set the initial time left to the first step's duration
-        return; // End sequence
+        setBreathingSteps(updatedSteps); 
+        setBreathingTimeLeft(updatedSteps[0].duration); 
+        return; 
       }
 
       const currentStep = updatedSteps[stepIndex];
@@ -100,7 +99,7 @@ export default function Relaxation() {
             text: 'Cancel',
             style: 'cancel',
             onPress: () => {
-              // Reset to default durations if the sequence is canceled
+              
               setBreathingSteps(defaultBreathingSteps);
               setBreathingTimeLeft(defaultBreathingSteps[0].duration);
             },
@@ -110,8 +109,8 @@ export default function Relaxation() {
             onPress: (input) => {
               const newDuration = parseInt(input, 10);
               if (!isNaN(newDuration) && newDuration > 0) {
-                updatedSteps[stepIndex].duration = newDuration; // Update the step's duration
-                promptSequence(stepIndex + 1); // Move to the next step
+                updatedSteps[stepIndex].duration = newDuration;
+                promptSequence(stepIndex + 1);
               } else {
                 Alert.alert('Invalid Input', 'Please enter a positive number.');
               }
@@ -119,28 +118,27 @@ export default function Relaxation() {
           },
         ],
         'plain-text',
-        `${currentStep.duration}` // Default value as the current step's duration
+        `${currentStep.duration}` 
       );
     };
 
-    promptSequence(); // Start the sequence
+    promptSequence();
   };
 
-  // Breathing animation logic
+ 
   useEffect(() => {
     if (isPlaying) {
-      // Handle the countdown for the current breathing step
+      
       const breathingInterval = setInterval(() => {
         setBreathingTimeLeft((prev) => {
           if (prev === 1) {
-            // Move to the next step in the breathing cycle
-            setCurrentStep((prevStep) => (prevStep + 1) % breathingSteps.length);
+            setCurrentStep((prevStep) => (prevStep + 1) % breathingSteps.length); // inhale and exhale cycle
             return breathingSteps[(currentStep + 1) % breathingSteps.length].duration;
           }
           return prev - 1;
         });
 
-        // Fade in and out animation for the inhale/hold/exhale text
+        
         Animated.sequence([
           Animated.timing(fadeAnim, {
             toValue: 0.3,
@@ -155,8 +153,8 @@ export default function Relaxation() {
             useNativeDriver: true,
           }),
         ]).start();
-
-        // Add a pulse effect for breathing instructions
+ 
+      
         Animated.sequence([
           Animated.timing(scaleAnim, {
             toValue: 1.2,
@@ -186,7 +184,7 @@ export default function Relaxation() {
       <CountdownCircleTimer
         key={key}
         isPlaying={isPlaying}
-        duration={duration} // Use the duration state
+        duration={duration} 
         colors={['#88BDBC', '#F7B801', '#A30000']}
         colorsTime={[duration * 0.67, duration * 0.33, 0]}
         onComplete={handleComplete}
@@ -211,7 +209,7 @@ export default function Relaxation() {
             fontWeight: 'bold',
             marginTop: 20,
             opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }], // Apply the pulse animation
+            transform: [{ scale: scaleAnim }],
           }}
         >
           {breathingSteps[currentStep].instruction} - {breathingTimeLeft} sec

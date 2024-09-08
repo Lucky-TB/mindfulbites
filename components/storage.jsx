@@ -1,9 +1,9 @@
-// utils/storage.js
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const saveList = async (list) => {
   try {
-    const jsonValue = JSON.stringify(list);
+    const jsonValue = JSON.stringify(list); //saving it as JSON stringify
     await AsyncStorage.setItem('@my_list', jsonValue);
     console.log('List saved!');
   } catch (error) {

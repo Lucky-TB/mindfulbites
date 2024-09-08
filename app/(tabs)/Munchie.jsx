@@ -1,16 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import * as GoogleGenerativeAI from '@google/generative-ai';
-import {
-  View,
-  Text,
-  TextInput,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-  Modal,
-  ScrollView,
-  StatusBar as RNStatusBar,
-} from 'react-native';
+import { View, Text, TextInput, FlatList, ActivityIndicator, TouchableOpacity, Modal, ScrollView, StatusBar as RNStatusBar } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { BlurView } from 'expo-blur';
@@ -29,12 +19,12 @@ const ModalComponent = ({ onSubmit }) => {
     setModalVisible(false);
     setText1('');
     setText2('');
-    setDiffLevel(0); // Reset difflevel when closing modal
+    setDiffLevel(0);
   };
 
   const handleSubmit = () => {
     if (text1.trim()) {
-      onSubmit(text1, text2, difflevel); // Pass text1, text2, and difflevel to the callback
+      onSubmit(text1, text2, difflevel);
     }
     closeModal();
   };
@@ -77,13 +67,13 @@ const ModalComponent = ({ onSubmit }) => {
               value={text2}
               onChangeText={setText2}
             />
-            <Slider
+            <Slider //difficulty slider
               style={{ width: '100%', height: 40 }}
               minimumValue={0}
               maximumValue={2}
               step={1}
               value={difflevel}
-              onValueChange={setDiffLevel} // Updated to setDiffLevel
+              onValueChange={setDiffLevel}
               minimumTrackTintColor="#88BDBC"
               maximumTrackTintColor="#C4C4C4"
               thumbTintColor="#88BDBC"
@@ -112,7 +102,7 @@ const ModalComponent = ({ onSubmit }) => {
   );
 };
 
-const GeminiChat = () => {
+const GeminiChat = () => {  //chatbot function
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -139,13 +129,13 @@ const GeminiChat = () => {
   const sendMessage = async () => {
     setLoading(true);
   
-    // Display a loading message
+
     setMessages((prevMessages) => [
       ...prevMessages,
       { text: 'ChatBot Loading...', user: false }
     ]);
   
-    const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(GEMINI_API_KEY);
+    const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(GEMINI_API_KEY); //chatbot setup
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = userInput;
   
@@ -153,20 +143,20 @@ const GeminiChat = () => {
       const result = await model.generateContent(prompt);
       const responseText = result?.response?.text ? result.response.text() : 'No response available.';
   
-      // Update the messages with the chatbot response
+
       setMessages((prevMessages) => [
         ...prevMessages,
         { text: responseText, user: false }
       ]);
     } catch (error) {
-      console.error('Error generating content:', error);
+      console.error('Error generating content:', error);  //error handling chatbot
       setMessages((prevMessages) => [
         ...prevMessages,
         { text: 'Failed to generate response.', user: false }
       ]);
     } finally {
       setLoading(false);
-      setUserInput(''); // Clear user input after sending
+      setUserInput('');
     }
   };
 
@@ -178,14 +168,14 @@ const GeminiChat = () => {
   const handleModalSubmit = async (text1, text2, difflevel) => {
     setLoading(true);
   
-    // Display a loading message
+
     setMessages((prevMessages) => [
       ...prevMessages,
       { text: 'ChatBot Loading...', user: false }
     ]);
   
-    // Construct the prompt using template literals
-    const difficultyLevels = ['easy', 'medium', 'hard'];
+  
+    const difficultyLevels = ['easy', 'medium', 'hard']; // integrating the variable infos and giving the chatbot instructions
     const prompt = `Feeling: ${text1}. Ingredients: ${text2}. Difficulty level: ${difficultyLevels[difflevel]}. Provide a creative recipe and incorporate uplifting advice related to cooking and the feelinsg im having. Ensure the response is engaging and empathetic.`;
   
     try {
@@ -193,15 +183,15 @@ const GeminiChat = () => {
       const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
   
       const result = await model.generateContent(prompt);
-      const responseText = result?.response?.text ? result.response.text() : 'No response available.';
+      const responseText = result?.response?.text ? result.response.text() : 'No response available.'; //chatbot setup
   
-      // Update the messages with the chatbot response
+
       setMessages((prevMessages) => [
         ...prevMessages,
         { text: responseText, user: false }
       ]);
     } catch (error) {
-      console.error('Error generating content:', error);
+      console.error('Error generating content:', error); //error handling
       setMessages((prevMessages) => [
         ...prevMessages,
         { text: 'Failed to generate response.', user: false }
@@ -235,7 +225,7 @@ const GeminiChat = () => {
         ref={flatListRef}
         data={messages}
         renderItem={renderMessage}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item, index) => index.toString()} //list of chats
         className="flex-1 mb-2 pt-10 pb-4"
         contentContainerStyle={{ paddingBottom: 10 }}
         showsVerticalScrollIndicator={false}
@@ -243,7 +233,7 @@ const GeminiChat = () => {
 
       <View className="flex-row items-center bg-[] rounded-3xl">
         <TextInput
-          placeholder="Type a message"
+          placeholder="Type a message" //text bot to type messages
           onChangeText={setUserInput}
           value={userInput}
           onSubmitEditing={sendMessage}
@@ -261,7 +251,7 @@ const GeminiChat = () => {
         {loading && <ActivityIndicator size="large" color="#4B5563" className="ml-2" />}
       </View>
 
-      <ModalComponent onSubmit={handleModalSubmit} />
+      <ModalComponent onSubmit={handleModalSubmit}/>
     </View>
   );
 };

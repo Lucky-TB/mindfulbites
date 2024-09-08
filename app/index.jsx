@@ -9,22 +9,22 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function Index() {
   const router = useRouter();
-  const opacity = new Animated.Value(1); // Initial opacity
+  const opacity = new Animated.Value(1); 
 
   useEffect(() => {
-    // Fade out effect
+
     Animated.timing(opacity, {
       toValue: 0,
       duration: 2000,
       useNativeDriver: true,
     }).start();
 
-    // Automatically navigate to home after 2 seconds
+
     const timer = setTimeout(() => {
-      router.replace('/home', undefined, { shallow: true }); // Use shallow routing to avoid animations
+      router.replace('/home', undefined, { shallow: true });
     }, 2000);
 
-    // Cleanup timer on component unmount
+
     return () => clearTimeout(timer);
   }, [router, opacity]);
 
@@ -32,12 +32,6 @@ export default function Index() {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#dbeceb' }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 16 }} scrollEnabled={false}>
         <View style={{ width: '100%', alignItems: 'center', minHeight: screenHeight * 0.95 }}>
-          {/* Optional logo image */}
-          {/* <Image 
-            source={images.logo}
-            style={{ width: screenWidth * 0.85, height: screenHeight * 0.1, marginTop: 30 }}
-            resizeMode="contain"
-          /> */}
 
           <Animated.Image 
             source={images.cards}

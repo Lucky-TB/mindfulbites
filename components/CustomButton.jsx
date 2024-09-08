@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    color: '#112122', // Adjust color as needed
+    color: '#112122', 
     fontWeight: '600',
     fontSize: 18,
   },

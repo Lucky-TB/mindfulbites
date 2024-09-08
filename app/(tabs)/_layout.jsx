@@ -96,20 +96,6 @@ const TabsLayout = () => {
                     )
                 }}
             />
-            {/*<Tabs.Screen
-                name="test"
-                options={{ title: 'test',
-                    headerShown: false,
-                    tabBarIcon: ({ color, focused }) => (
-                      <TabIcon
-                        icon={icons.profile}
-                        color={color}
-                        name="test"
-                        focused={focused}
-                      />
-                    )
-                }}
-              />*/}
         </Tabs>
     </ModalProvider>
     </MoodProvider>

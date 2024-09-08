@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 const STORAGE_KEY = '@current_mood';
 
 const useAsyncStorageMood = () => {
-  const [mood, setMood] = useState(0); // Default mood value
+  const [mood, setMood] = useState(0);
 
   const saveMoodToStorage = async (newMood) => {
     try {
@@ -27,7 +27,7 @@ const useAsyncStorageMood = () => {
   const deleteMoodFromStorage = async () => {
     try {
       await AsyncStorage.removeItem(STORAGE_KEY);
-      setMood(0); // Reset to default mood value
+      setMood(0); 
     } catch (error) {
       console.error('Error deleting mood from storage:', error);
     }
