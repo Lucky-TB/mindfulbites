@@ -114,7 +114,8 @@ export default function SettingsTab() {
                   width={screenWidth - 70}
                   height={300}
                   domainPadding={20}
-                  style={{ parent: { borderRadius: 16 } }}
+                  style={{ parent: { borderRadius: 16 }, marginBottom: -20 }}
+                  
                 >
                   <VictoryAxis
                     style={{
@@ -164,12 +165,12 @@ export default function SettingsTab() {
                   ]
                 );
               }}
-              containerStyles={{ marginBottom: 12 }}
+              containerStyles={{ marginTop: 145 }}
             />
             <CustomButton
               title="Close" 
               handlePress={() => setModalVisible(false)}
-              containerStyles={{ marginTop: 95, border: 2 }}
+              containerStyles={{ marginTop: 15, border: 2 }}
             />
           </View>
         </BlurView>

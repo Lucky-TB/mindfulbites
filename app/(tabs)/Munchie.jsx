@@ -7,41 +7,34 @@ import {
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
-  ScrollView,
   Modal,
+  ScrollView,
   StatusBar as RNStatusBar,
 } from 'react-native';
-{/*import * as Speech from 'expo-speech';*/}
-import { FontAwesome, Entypo } from '@expo/vector-icons';
-import FlashMessage, { showMessage } from 'react-native-flash-message';
+import { Entypo } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import { ModalContext } from '../../components/ModalContext'; // Import ModalContext
-import { BlurView } from 'expo-blur'; // Import BlurView
-import { GEMINI_API_KEY } from '@env';
-{/*import useAsyncStorageRecipes from '../../components/asyncStorageRecipes';*/}
+import { BlurView } from 'expo-blur';
 import Slider from '@react-native-community/slider';
+import { ModalContext } from '../../components/ModalContext';
+import { GEMINI_API_KEY } from '@env';
 
 const ModalComponent = ({ onSubmit }) => {
   const { modalVisible, setModalVisible } = useContext(ModalContext);
   const [height, setHeight] = useState(0);
+  const [difflevel, setDiffLevel] = useState(0);
   const [text1, setText1] = useState('');
-  const handleTextChange1 = (input) => {
-    setText1(input);
-  };
   const [text2, setText2] = useState('');
-  const handleTextChange2 = (input) => {
-    setText2(input);
-  };
 
   const closeModal = () => {
     setModalVisible(false);
     setText1('');
     setText2('');
+    setDiffLevel(0); // Reset difflevel when closing modal
   };
 
   const handleSubmit = () => {
     if (text1.trim()) {
-      onSubmit(text1, text2); // Pass both text1 and text2 to the callback
+      onSubmit(text1, text2, difflevel); // Pass text1, text2, and difflevel to the callback
     }
     closeModal();
   };
@@ -62,7 +55,7 @@ const ModalComponent = ({ onSubmit }) => {
             <Text className="text-3xl font-bold mb-5 mt-3 text-center">Info</Text>
             <TextInput
               style={[{ height }]}
-              className='border-2 border-[#2f5456] bg-white rounded-lg p-4 mb-10'
+              className='border-2 border-[#2f5456] bg-[#dbeceb] rounded-lg p-4 mb-10'
               placeholder="Enter your feelings"
               placeholderTextColor="#112122"
               multiline
@@ -70,11 +63,11 @@ const ModalComponent = ({ onSubmit }) => {
                 setHeight(contentHeight);
               }}
               value={text1}
-              onChangeText={handleTextChange1}
+              onChangeText={setText1}
             />
             <TextInput
               style={[{ height }]}
-              className='border-2 border-[#2f5456] bg-white rounded-lg p-4 mb-4 mt-[-25]'
+              className='border-2 border-[#2f5456] bg-[#dbeceb] rounded-lg p-4 mb-4 mt-[-25]'
               placeholder="Enter any Specific Ingredients"
               placeholderTextColor="#112122"
               multiline
@@ -82,14 +75,36 @@ const ModalComponent = ({ onSubmit }) => {
                 setHeight(contentHeight);
               }}
               value={text2}
-              onChangeText={handleTextChange2}
+              onChangeText={setText2}
             />
+            <Slider
+              style={{ width: '100%', height: 40 }}
+              minimumValue={0}
+              maximumValue={2}
+              step={1}
+              value={difflevel}
+              onValueChange={setDiffLevel} // Updated to setDiffLevel
+              minimumTrackTintColor="#88BDBC"
+              maximumTrackTintColor="#C4C4C4"
+              thumbTintColor="#88BDBC"
+            />
+
+            <View className="flex-row justify-between px-2 mt-2">
+              {['Easy', 'Medium', 'Hard'].map((val, index) => (
+                <Text
+                  key={index}
+                  className={`text-[#3B3B3B] ${difflevel === index ? 'text-[#88BDBC]' : ''} font-medium`}
+                >
+                  {val}
+                </Text>
+              ))}
+            </View>
           </ScrollView>
           <TouchableOpacity
             onPress={handleSubmit}
             className="bg-[#478385] p-4 rounded-lg mt-5 border-2"
           >
-            <Text className="text-white font-bold text-center">Submit</Text>
+            <Text className="text-[#dbeceb] font-bold text-center">Submit</Text>
           </TouchableOpacity>
         </View>
       </BlurView>
@@ -104,23 +119,15 @@ const GeminiChat = () => {
   const [showStopIcon, setShowStopIcon] = useState(false);
   const flatListRef = useRef(null);
   const { setModalVisible } = useContext(ModalContext);
-  const API_KEY = GEMINI_API_KEY;
 
   useEffect(() => {
     const startChat = async () => {
-      const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(API_KEY);
+      const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
       const prompt = 'hello';
       const result = await model.generateContent(prompt);
       const text = result?.response?.text ? result.response.text() : 'No response available.';
       setMessages([{ text, user: false }]);
-      useEffect(() => { //This line gives warning be careful
-        const loadStoredRecipes = async () => {
-          await loadRecipesFromStorage(); 
-        };
-      
-        loadStoredRecipes();
-      }, []);
     };
     startChat();
   }, []);
@@ -138,15 +145,13 @@ const GeminiChat = () => {
       { text: 'ChatBot Loading...', user: false }
     ]);
   
-    const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(API_KEY);
+    const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = userInput;
   
     try {
       const result = await model.generateContent(prompt);
       const responseText = result?.response?.text ? result.response.text() : 'No response available.';
-  
-      // Save AI response to storage
   
       // Update the messages with the chatbot response
       setMessages((prevMessages) => [
@@ -170,7 +175,7 @@ const GeminiChat = () => {
     setIsSpeaking(false);
   };
 
-  const handleModalSubmit = async (text1, text2) => {
+  const handleModalSubmit = async (text1, text2, difflevel) => {
     setLoading(true);
   
     // Display a loading message
@@ -180,10 +185,11 @@ const GeminiChat = () => {
     ]);
   
     // Construct the prompt using template literals
-    const prompt = `This is what I am feeling: ${text1}. These are the ingredients I have: ${text2}. Please make me a recipe. Can you try to keep the recipe short and also try to cheer up the user by giving them help on their specific feelings`;
+    const difficultyLevels = ['easy', 'medium', 'hard'];
+    const prompt = `Feeling: ${text1}. Ingredients: ${text2}. Difficulty level: ${difficultyLevels[difflevel]}. Provide a creative recipe and incorporate uplifting advice related to cooking and the feelinsg im having. Ensure the response is engaging and empathetic.`;
   
     try {
-      const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(API_KEY);
+      const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
   
       const result = await model.generateContent(prompt);
@@ -207,7 +213,7 @@ const GeminiChat = () => {
 
   const renderMessage = ({ item }) => (
     <View
-      className={`p-3 my-1 rounded-2xl shadow-sm mt-4 mb-10 ${
+      className={`p-3 my-1 rounded-2xl shadow-sm mt-4 mb-10 border-2 ${
         item.user || item.text === 'ChatBot Loading...' ? 'bg-[#b6d9d7] self-end' : 'bg-[#b6d9d7] self-start'
       } max-w-[80%]`}
     >
@@ -256,7 +262,6 @@ const GeminiChat = () => {
       </View>
 
       <ModalComponent onSubmit={handleModalSubmit} />
-      
     </View>
   );
 };

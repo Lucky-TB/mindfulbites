@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import CustomButton from '../../components/CustomButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage'; //Import Async Storage
 import { MoodContext } from '../../components/MoodContext'; // Import MoodContext
 import { ModalContext } from '../../components/ModalContext';
 
@@ -59,8 +59,7 @@ export default function HomeTab() {
           <Slider
             style={{ width: '100%', height: 40 }}
             minimumValue={0}
-            maximumValue={4}
-            step={0.5}
+            maximumValue={4}            
             value={stressLevel}
             onValueChange={handleStressLevelChange}
             minimumTrackTintColor="#88BDBC"

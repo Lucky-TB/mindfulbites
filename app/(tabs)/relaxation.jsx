@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Dimensions, Alert, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, Alert, Animated, Easing } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Audio } from 'expo-av';
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
@@ -24,6 +24,7 @@ export default function Relaxation() {
   const [breathingSteps, setBreathingSteps] = useState(defaultBreathingSteps);
   const [breathingTimeLeft, setBreathingTimeLeft] = useState(breathingSteps[0].duration);
   const fadeAnim = useState(new Animated.Value(1))[0]; // Animation for inhale-exhale
+  const scaleAnim = useState(new Animated.Value(1))[0]; // Animation for pulse effect
 
   // Function to play a sound when the timer starts
   const playSound = async () => {
@@ -144,11 +145,29 @@ export default function Relaxation() {
           Animated.timing(fadeAnim, {
             toValue: 0.3,
             duration: 1000,
+            easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
           Animated.timing(fadeAnim, {
             toValue: 1,
             duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]).start();
+
+        // Add a pulse effect for breathing instructions
+        Animated.sequence([
+          Animated.timing(scaleAnim, {
+            toValue: 1.2,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 1,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
         ]).start();
@@ -156,7 +175,7 @@ export default function Relaxation() {
 
       return () => clearInterval(breathingInterval);
     }
-  }, [isPlaying, fadeAnim, currentStep, breathingSteps]);
+  }, [isPlaying, fadeAnim, scaleAnim, currentStep, breathingSteps]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#dbeceb] justify-center items-center">
@@ -173,6 +192,7 @@ export default function Relaxation() {
         onComplete={handleComplete}
         size={screenWidth * 0.7}
         strokeWidth={12}
+        trailColor="#f3f3f3"
       >
         {({ remainingTime }) => (
           <TouchableOpacity onPress={changeDuration}>
@@ -191,6 +211,7 @@ export default function Relaxation() {
             fontWeight: 'bold',
             marginTop: 20,
             opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }], // Apply the pulse animation
           }}
         >
           {breathingSteps[currentStep].instruction} - {breathingTimeLeft} sec
